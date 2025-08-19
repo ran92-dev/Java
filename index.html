@@ -2,7 +2,14 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>File Viewer</title>
+  <title>Markdown/Text Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #viewer { border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa; }
+    h1,h2,h3 { border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+    pre { background: #272822; color: #f8f8f2; padding: 10px; border-radius: 6px; overflow-x: auto; }
+    code { font-family: monospace; }
+  </style>
 </head>
 <body>
   <h1>Files</h1>
@@ -12,8 +19,10 @@
   </ul>
 
   <h2>Preview</h2>
-  <pre id="viewer">Click a file to view its content here...</pre>
+  <div id="viewer">Click a file to view its content here...</div>
 
+  <!-- Load marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     function showFile(filename) {
       fetch(filename)
@@ -22,7 +31,8 @@
           return response.text();
         })
         .then(data => {
-          document.getElementById("viewer").textContent = data;
+          // Treat any raw text as Markdown
+          document.getElementById("viewer").innerHTML = marked.parse(data);
         })
         .catch(error => {
           document.getElementById("viewer").textContent = "Error loading file: " + error;
