@@ -2,43 +2,32 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Welcome</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    nav {
-      background-color: #333;
-      padding: 10px;
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin: 0 15px;
-      font-weight: bold;
-    }
-    nav a:hover {
-      text-decoration: underline;
-    }
-    .content {
-      padding: 20px;
-    }
-  </style>
+  <title>File Viewer</title>
 </head>
 <body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="contact.html">Contact</a>
-  </nav>
-
-  <div class="content">
-    <h1>Welcome 🎉</h1>
+  <h1>Files</h1>
   <ul>
-    <li><a href="Correctness_of_Producer-Consumer_Program.md">Correctness of Producer-Consumer Program</a></li>
+    <li><a href="#" onclick="showFile('Correctness_of_Producer-Consumer_Program.md'); return false;">Correctness_of_Producer-Consumer_Program</a></li>
+    <li><a href="#" onclick="showFile('notes.txt'); return false;">notes.txt</a></li>
   </ul>
-  </div>
+
+  <h2>Preview</h2>
+  <pre id="viewer">Click a file to view its content here...</pre>
+
+  <script>
+    function showFile(filename) {
+      fetch(filename)
+        .then(response => {
+          if (!response.ok) throw new Error("File not found");
+          return response.text();
+        })
+        .then(data => {
+          document.getElementById("viewer").textContent = data;
+        })
+        .catch(error => {
+          document.getElementById("viewer").textContent = "Error loading file: " + error;
+        });
+    }
+  </script>
 </body>
 </html>
