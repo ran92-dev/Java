@@ -34,10 +34,11 @@
     }
 
     nav {
-      width: 220px;
+      width: 260px;
       background: #fff;
       border-right: 1px solid #ddd;
       padding: 20px;
+      overflow-y: auto;
     }
 
     nav ul {
@@ -46,7 +47,7 @@
     }
 
     nav li {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     nav a {
@@ -103,9 +104,8 @@
   <main>
     <nav>
       <h3>Files</h3>
-      <ul>
-        <li><a href="#" onclick="showFile('Correctness_of_Producer-Consumer_Program.md'); return false;">Correctness_of_Producer-Consumer_Program</a></li>
-        <li><a href="#" onclick="showFile('notes.txt'); return false;">notes.txt</a></li>
+      <ul id="file-list">
+        <li>Loading...</li>
       </ul>
     </nav>
 
@@ -116,26 +116,61 @@
   </main>
 
   <footer>
-    © 2025 My GitHub Pages Viewer | Powered by <a href="https://marked.js.org/" target="_blank" style="color:#58a6ff;">marked.js</a>
+    © 2025 My GitHub Pages Viewer | Powered by 
+    <a href="https://marked.js.org/" target="_blank" style="color:#58a6ff;">marked.js</a>
   </footer>
 
   <!-- Markdown parser -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    function showFile(filename) {
-      fetch(filename)
-        .then(response => {
-          if (!response.ok) throw new Error("File not found");
-          return response.text();
-        })
+    const repoOwner = "ran92-dev";   // 👈 replace with your GitHub username
+    const repoName  = "https://github.com/ran92-dev/personal-wiki.git";       // 👈 replace with your repository name
+    const branch    = "main";            // or "master" if using master branch
+
+    async function loadRepoContents(path = "") {
+      const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}?ref=${branch}`;
+      const response = await fetch(url);
+      const files = await response.json();
+
+      const listEl = document.getElementById("file-list");
+      if (path === "") listEl.innerHTML = ""; // clear only top level on first load
+
+      files.forEach(file => {
+        const li = document.createElement("li");
+        if (file.type === "dir") {
+          li.innerHTML = `<strong>📁 ${file.name}</strong>`;
+          const subUl = document.createElement("ul");
+          li.appendChild(subUl);
+          listEl.appendChild(li);
+          // recursively load subfolders
+          loadRepoContents(file.path, subUl);
+        } else {
+          li.innerHTML = `<a href="#" onclick="showFile('${file.path}');return false;">📄 ${file.name}</a>`;
+          listEl.appendChild(li);
+        }
+      });
+    }
+
+    function showFile(path) {
+      const rawUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${path}`;
+      fetch(rawUrl)
+        .then(r => r.text())
         .then(data => {
-          document.getElementById("viewer").innerHTML = marked.parse(data);
+          if (path.endsWith(".md")) {
+            document.getElementById("viewer").innerHTML = marked.parse(data);
+          } else {
+            document.getElementById("viewer").innerHTML = 
+              `<pre>${data.replace(/[&<>]/g, t => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[t]))}</pre>`;
+          }
         })
-        .catch(error => {
+        .catch(err => {
           document.getElementById("viewer").innerHTML = 
-            "<p style='color:red;'>❌ Error loading file: " + error + "</p>";
+            `<p style='color:red;'>❌ Error loading file: ${err}</p>`;
         });
     }
+
+    // kick off
+    loadRepoContents();
   </script>
 </body>
 </html>
