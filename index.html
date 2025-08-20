@@ -1,26 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Welcome 🎉</title>
   <style>
+    :root {
+      --bg: #f4f6f8;
+      --fg: #333;
+      --muted: #6a737d;
+      --border: #e1e4e8;
+      --link: #0366d6;
+      --header: #24292e;
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
       margin: 0;
-      background: #f4f6f8;
-      color: #333;
+      background: var(--bg);
+      color: var(--fg);
     }
-
     header {
-      background: #24292e;
-      color: white;
-      padding: 15px 30px;
-      font-size: 20px;
-      font-weight: bold;
+      background: var(--header);
+      color: #fff;
+      padding: 14px 24px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
     }
+    header .title { font-weight: 700; }
+    header .branch { color: #c9d1d9; font-size: 14px; }
 
     footer {
-      background: #24292e;
+      background: var(--header);
       color: #bbb;
       padding: 10px;
       text-align: center;
@@ -28,114 +42,235 @@
       margin-top: 20px;
     }
 
-    main {
-      display: flex;
-      min-height: 80vh;
-    }
+    main { display: flex; min-height: 80vh; }
 
     nav {
-      width: 220px;
+      width: 300px;
       background: #fff;
-      border-right: 1px solid #ddd;
-      padding: 20px;
-    }
-
-    nav ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    nav li {
-      margin-bottom: 10px;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: #0366d6;
-    }
-
-    nav a:hover {
-      text-decoration: underline;
-    }
-
-    #viewer {
-      flex-grow: 1;
-      padding: 20px;
-      background: #fff;
+      border-right: 1px solid var(--border);
+      padding: 16px 12px 24px;
       overflow-y: auto;
     }
+    nav h3 { margin: 0 0 10px; font-size: 16px; color: var(--muted); }
 
-    /* Markdown content styling */
-    #viewer h1, #viewer h2, #viewer h3 {
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 5px;
-      margin-top: 20px;
-    }
+    #file-list { list-style: none; margin: 0; padding-left: 4px; }
+    #file-list li { margin: 2px 0; }
 
-    #viewer pre {
-      background: #272822;
-      color: #f8f8f2;
-      padding: 10px;
+    details.folder { border-left: 2px solid transparent; }
+    details.folder[open] { border-left-color: #e2e8f0; }
+
+    details > summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 4px;
       border-radius: 6px;
-      overflow-x: auto;
     }
+    details > summary::-webkit-details-marker { display: none; }
 
-    #viewer code {
-      font-family: monospace;
-      background: #f6f8fa;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
+    .caret { display: inline-block; width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 6px solid #6b7280; transition: transform .15s ease; }
+    details[open] > summary .caret { transform: rotate(90deg); }
 
-    #viewer blockquote {
-      border-left: 4px solid #ccc;
-      padding-left: 10px;
-      color: #555;
-      margin: 10px 0;
+    .item {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 6px; border-radius: 6px;
     }
+    .item:hover { background: #f6f8fa; }
+
+    .icon { width: 16px; text-align: center; }
+
+    .filelink { text-decoration: none; color: var(--link); }
+    .filelink.active { font-weight: 600; }
+
+    #viewer {
+      flex: 1; padding: 20px; background: #fff; overflow-y: auto;
+    }
+    #viewer h1, #viewer h2, #viewer h3 {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px; margin-top: 20px;
+    }
+    #viewer pre {
+      background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; overflow-x: auto;
+    }
+    #viewer code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f6f8fa; padding: 2px 4px; border-radius: 4px; }
+    #viewer blockquote { border-left: 4px solid #d1d5db; padding-left: 10px; color: #374151; margin: 10px 0; }
+
+    .muted { color: var(--muted); font-size: 13px; }
   </style>
 </head>
 <body>
   <header>
-    📄 Welcome 🎉
+    <div class="title">📄 Welcome 🎉</div>
+    <div class="branch" id="branchLabel"></div>
   </header>
 
   <main>
     <nav>
-      <h3>Files</h3>
-      <ul>
-        <li><a href="#" onclick="showFile('Correctness_of_Producer-Consumer_Program.md'); return false;">Correctness_of_Producer-Consumer_Program</a></li>
-        <li><a href="#" onclick="showFile('notes.txt'); return false;">notes.txt</a></li>
-      </ul>
+      <h3>Repository Files</h3>
+      <ul id="file-list"><li class="muted">Loading…</li></ul>
     </nav>
 
     <div id="viewer">
       <h2>Welcome</h2>
       <p>Select a file from the left to view its contents here.</p>
+      <p class="muted">Markdown (.md) renders nicely. Other files show in a code block; images display inline.</p>
     </div>
   </main>
 
   <footer>
-    © 2025 My GitHub Pages Viewer | Powered by <a href="https://marked.js.org/" target="_blank" style="color:#58a6ff;">marked.js</a>
+    © 2025 My GitHub Pages Viewer &nbsp;|&nbsp; Powered by <a href="https://marked.js.org/" target="_blank" style="color:#58a6ff;">marked.js</a>
   </footer>
 
-  <!-- Markdown parser -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    function showFile(filename) {
-      fetch(filename)
-        .then(response => {
-          if (!response.ok) throw new Error("File not found");
-          return response.text();
-        })
-        .then(data => {
-          document.getElementById("viewer").innerHTML = marked.parse(data);
-        })
-        .catch(error => {
-          document.getElementById("viewer").innerHTML = 
-            "<p style='color:red;'>❌ Error loading file: " + error + "</p>";
-        });
+    // ========= CONFIG =========
+    // Try to auto-detect owner/repo from GitHub Pages URL. Fallback to manual values.
+    function detectRepoFromLocation() {
+      const host = location.hostname;
+      const pathParts = location.pathname.split('/').filter(Boolean);
+      let owner = null, repo = null;
+      if (host.endsWith('github.io')) {
+        owner = host.split('.')[0];
+        repo = pathParts.length ? pathParts[0] : `${owner}.github.io`;
+      }
+      return { owner, repo };
     }
+
+    const detected = detectRepoFromLocation();
+    const repoOwner = detected.owner || 'ran92-dev'; // ← change if auto-detect fails
+    const repoName  = detected.repo   || 'personal-wiki';     // ← change if auto-detect fails
+    let   branch    = 'main';                              // default; will try to auto-detect below
+
+    // ========= HELPERS =========
+    const apiBase = `https://api.github.com/repos/${repoOwner}/${repoName}`;
+    const escapeHTML = (s) => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    const encodePath = (p) => p.split('/').map(encodeURIComponent).join('/');
+    const rawUrlOf = (p) => `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${encodePath(p)}`;
+
+    function sortEntries(a, b) {
+      if (a.type !== b.type) return a.type === 'dir' ? -1 : 1; // dirs first
+      return a.name.localeCompare(b.name);
+    }
+
+    function isImage(name) { return /\.(png|jpe?g|gif|svg|webp|bmp)$/i.test(name); }
+    function isPDF(name)   { return /\.(pdf)$/i.test(name); }
+    function isMarkdown(n) { return /\.(md|markdown)$/i.test(n); }
+
+    function setActiveLink(path) {
+      document.querySelectorAll('.filelink').forEach(a => a.classList.remove('active'));
+      const el = document.querySelector(`.filelink[data-path="${CSS.escape(path)}"]`);
+      if (el) el.classList.add('active');
+    }
+
+    // ========= RENDER VIEWER =========
+    async function showFile(path) {
+      setActiveLink(path);
+      const url = rawUrlOf(path);
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const data = await res.text();
+        const viewer = document.getElementById('viewer');
+        if (isMarkdown(path)) {
+          viewer.innerHTML = marked.parse(data);
+        } else if (isImage(path)) {
+          viewer.innerHTML = `<div class="muted">${escapeHTML(path)}</div><p><img src="${url}" alt="${escapeHTML(path)}" style="max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px;"/></p>`;
+        } else if (isPDF(path)) {
+          viewer.innerHTML = `<div class="muted">${escapeHTML(path)}</div><iframe src="${url}" style="width:100%;height:75vh;border:1px solid var(--border);border-radius:8px;"></iframe>`;
+        } else {
+          viewer.innerHTML = `<div class="muted">${escapeHTML(path)}</div><pre>${escapeHTML(data)}</pre>`;
+        }
+      } catch (err) {
+        document.getElementById('viewer').innerHTML = `<p style='color:red;'>❌ Error loading file: ${escapeHTML(String(err))}</p>`;
+      }
+    }
+
+    // ========= FILE TREE (lazy, correct nesting) =========
+    async function fetchDir(path = '') {
+      const url = `${apiBase}/contents/${encodePath(path)}?ref=${encodeURIComponent(branch)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const json = await res.json();
+      if (!Array.isArray(json)) return [];
+      // Filter out GitHub internals you likely don't want
+      return json
+        .filter(x => !/^\.|^_config\.yml$|^CNAME$|^README\.md$/i.test(x.name) || path !== '')
+        .sort(sortEntries);
+    }
+
+    async function renderDir(containerUL, path = '') {
+      containerUL.innerHTML = '';
+      const entries = await fetchDir(path);
+      for (const e of entries) {
+        const li = document.createElement('li');
+        if (e.type === 'dir') {
+          const details = document.createElement('details');
+          details.className = 'folder';
+          const summary = document.createElement('summary');
+          summary.innerHTML = `<span class="caret"></span><span class="icon">📁</span><span class="item">${escapeHTML(e.name)}</span>`;
+          const inner = document.createElement('ul');
+          inner.style.listStyle = 'none';
+          inner.style.marginLeft = '18px';
+          inner.style.paddingLeft = '10px';
+
+          details.appendChild(summary);
+          details.appendChild(inner);
+          li.appendChild(details);
+          containerUL.appendChild(li);
+
+          // Lazy-load folder contents on first open
+          details.addEventListener('toggle', async () => {
+            if (details.open && !details.dataset.loaded) {
+              details.dataset.loaded = '1';
+              inner.innerHTML = `<li class="muted">Loading…</li>`;
+              try {
+                await renderDir(inner, e.path);
+              } catch (er) {
+                inner.innerHTML = `<li style="color:red;">Failed to load: ${escapeHTML(String(er))}</li>`;
+              }
+            }
+          });
+        } else {
+          const a = document.createElement('a');
+          a.href = '#';
+          a.className = 'filelink';
+          a.dataset.path = e.path;
+          a.textContent = e.name;
+          a.addEventListener('click', (ev) => { ev.preventDefault(); showFile(e.path); });
+          li.innerHTML = `<span class="icon">📄</span>`;
+          li.appendChild(a);
+          containerUL.appendChild(li);
+        }
+      }
+      if (!entries.length) {
+        containerUL.innerHTML = '<li class="muted">(empty)</li>';
+      }
+    }
+
+    // ========= BRANCH AUTODETECT =========
+    async function detectDefaultBranch() {
+      try {
+        const res = await fetch(apiBase);
+        if (!res.ok) return; // keep default
+        const repo = await res.json();
+        if (repo && repo.default_branch) branch = repo.default_branch;
+      } catch {}
+      document.getElementById('branchLabel').textContent = `${repoOwner}/${repoName} @ ${branch}`;
+    }
+
+    // Boot
+    (async function init() {
+      await detectDefaultBranch();
+      const root = document.getElementById('file-list');
+      try {
+        root.innerHTML = '<li class="muted">Loading…</li>';
+        await renderDir(root, '');
+      } catch (e) {
+        root.innerHTML = `<li style="color:red;">❌ ${escapeHTML(String(e))}<br><span class='muted'>Tip: If your repo is private or API rate limit exceeded, the GitHub API may refuse requests.</span></li>`;
+      }
+    })();
   </script>
 </body>
 </html>
